@@ -1,0 +1,33 @@
+# Use Debian Bullseye as the base image
+FROM debian:bullseye
+
+# Install dependencies and MariaDB server
+RUN apt-get update \
+    && apt-get install -y \
+        apt-utils \
+        mariadb-server \
+        mariadb-client \
+        vim \
+    && rm -rf /var/lib/mysql \
+    && mkdir -p /var/lib/mysql /run/mysqld \
+    && chown -R mysql:mysql /var/lib/mysql /run/mysqld \
+    && chmod 777 /var/run/mysqld
+
+
+VOLUME /var/lib/mysql
+
+
+# Copy MariaDB configuration file
+COPY ./config/mariadb.cnf /etc/mysql/my.cnf
+
+# Copy initialization script
+COPY ./init_sql/init.sh /
+
+# Grant execute permissions to the initialization script
+RUN chmod +x /init.sh
+
+# Expose the MariaDB port
+EXPOSE 3306
+
+# Set the entry point to the initialization script
+ENTRYPOINT ["/init.sh"]

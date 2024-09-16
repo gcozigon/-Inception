@@ -1,0 +1,33 @@
+include /etc/nginx/modules-enabled/*.conf;
+
+events {
+	worker_connections 1024;
+}
+# Configuration HTTP
+http {
+    # Configuration du serveur virtuel pour gcozigon.42.fr
+    server {
+        listen 443 ssl; # Écoute sur le port 443 en utilisant SSL
+        server_name localhost; # Nom du serveur
+
+        ssl_certificate /etc/nginx/ssl/inception.crt; # Chemin vers le certificat SSL
+        ssl_certificate_key /etc/nginx/ssl/inception.key; # Chemin vers la clé privée du certificat SSL
+        ssl_protocols TLSv1.2 TLSv1.3; # Protocoles SSL autorisés
+
+        root /var/www/wordpress; # Répertoire racine des fichiers du site web
+        index index.php index.html; # Fichiers index autorisés
+
+        # Configuration pour le traitement des fichiers PHP
+	location ~ \.php$ {
+		try_files $uri =404;
+        	fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        	fastcgi_pass wordpress:9000;
+        	fastcgi_index index.php;
+        	include fastcgi_params;
+        	fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        	fastcgi_param PATH_INFO $fastcgi_path_info;
+		access_log /var/log/nginx/wordpress/access.log;
+		error_log /var/log/nginx/wordpress/error.log;
+        }
+    }
+}
