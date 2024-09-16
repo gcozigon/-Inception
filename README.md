@@ -1,4 +1,4 @@
-# -Inception
+# Inception
 
 Inception is a project focused on containerization and virtualization using Docker.
 
